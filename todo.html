@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>ToDo List</title>
+    <link rel="stylesheet" href="todo.css" />
+    <link rel="icon" href="iconn.png" />
+  </head>
+  <body>
+    <h1>TODO List</h1>
+    <div class="whole-thing">
+      <div class="adder">
+        <input maxlength="33" id="todo-title" type="text" />
+        <input id="date-picker" type="date" />
+        <button id="addtodobutton" onclick="addTodos()">Add ToDo Item</button>
+      </div>
+
+      <div id="todo-list"></div>
+    </div>
+
+    <script>
+      //MODEL PART OF MVC
+
+      //if localstorage has todos array then retrieve it
+      //otherwise use this default array
+
+      let todos;
+
+      //retrieve local storage
+      const savedTodos = JSON.parse(localStorage.getItem("todoskey"));
+      //check if it's an array
+
+      if (Array.isArray(savedTodos)) {
+        todos = savedTodos;
+      } else {
+        todos = [
+          { title: "Read Books", dueDate: "21-12-2022", id: "id1" },
+          { title: "Practice Coding", dueDate: "03-01-2022", id: "id2" },
+          { title: "Play Gaime", dueDate: "11-11-2011", id: "id3" },
+        ];
+      }
+
+      function createTodo(title, dueDate) {
+        //create a random id for each todo, which is the current time as it will be unique everytime we press the button and that button will save the current millisecond time as the id for this object todo item.
+        const id = "" + new Date().getTime();
+
+        //push the new value and date value in the array as an object
+        todos.push({ title: title, dueDate: dueDate, id: id });
+
+        saveTodos();
+      }
+
+      function removeTodo(idTodelete) {
+        todos = todos.filter(function (todo) {
+          //we are now looping through all the values of the todo array, so if the id of any specific array object item matches idTodelete we will return false value that will delete that entry from our array.
+          //for everything else return true
+
+          if (todo.id === idTodelete) {
+            return false;
+          } else {
+            return true;
+          }
+        });
+
+        saveTodos();
+      }
+
+      function saveTodos() {
+        localStorage.setItem("todoskey", JSON.stringify(todos));
+      }
+
+      //VIEW PART OF MVC
+
+      //to print the elements of the 'todos' array on screen
+      function render() {
+        //to empty the div inside which we will add our list items
+        document.getElementById("todo-list").innerHTML = "";
+        let i = 1;
+        todos.forEach(function (todo) {
+          const element = document.createElement("div");
+
+          element.innerText = i + ". " + todo.title + " --- " + todo.dueDate;
+          i = i + 1;
+
+          element.className = "todoline";
+
+          //create the delete button and append it to the element so it appears with every list item
+          const delButton = document.createElement("button");
+          delButton.innerText = "Delete";
+          element.appendChild(delButton);
+          delButton.style = "margin-left: 12px";
+          delButton.onclick = deleteTodo;
+          delButton.id = todo.id;
+          delButton.className = "delbuttonclass";
+
+          //to grab the div inside which we will add our list items
+          const todoList = document.getElementById("todo-list");
+          todoList.appendChild(element);
+        });
+      }
+      render();
+
+      //CONTROLLER PART OF MVC
+
+      //what happens when the button is pressed
+      function addTodos() {
+        //get element from the text input
+        const textbox = document.getElementById("todo-title");
+        //get value of that element
+        const title = textbox.value;
+
+        //take the date from the date input block
+        const datePicker = document.getElementById("date-picker");
+        const dueDate = datePicker.value;
+
+        createTodo(title, dueDate);
+
+        //running the array print code
+        render();
+      }
+
+      function deleteTodo(event) {
+        const deleteButton = event.target;
+        const idTodelete = deleteButton.id;
+
+        removeTodo(idTodelete);
+
+        render();
+      }
+    </script>
+  </body>
+</html>
